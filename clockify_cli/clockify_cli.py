@@ -8,6 +8,18 @@ CLOCKIFY_API_KEY = os.environ.get('CLOCKIFY_API_KEY', None)
 CONFIG_FOLDER = os.environ.get('CLOCKIFY_CLI_CONFIG', '~/.clockify.cfg')
 headers = {"X-Api-Key": None}
 
+class WorkspaceType(click.ParamType):
+    name = "workspace"
+
+    def convert(self, value, param, ctx):
+        try:
+            workspace_id = get_workspaces()[value]
+            return workspace_id
+        except KeyError:
+            self.fail(f"Could not found project {value!r}", param, ctx)
+
+WorkspaceName = WorkspaceType()
+
 def set_api(api):
     headers["X-Api-Key"] = api
 
@@ -91,7 +103,7 @@ def cli(verbose):
         set_api(new)
 
 @click.command('start', short_help='Start a new time entry')
-@click.argument('workspace') 
+@click.argument('workspace', type=WorkspaceName)
 @click.argument('description')
 @click.option('--billable', is_flag=True, default=False, help="Set if entry is billable")
 @click.option('--project', '-p', default=None, help="Project ID")
@@ -102,14 +114,14 @@ def start(workspace, description, billable, project, tag):
         print_json(ret)
 
 @click.command('finish', short_help='Finish an on-going time entry')
-@click.argument('workspace')
+@click.argument('workspace', type=WorkspaceName)
 def finish(workspace):
     ret = finish_time_entry(workspace)
     if VERBOSE:
         print_json(ret)
 
 @click.command('projects', short_help='Show all projects')
-@click.argument('workspace')
+@click.argument('workspace', type=WorkspaceName)
 def projects(workspace):
     data = get_projects(workspace)
     if VERBOSE:
@@ -130,7 +142,7 @@ def workspaces():
             click.echo(f'{id}: {name}')
 
 @click.command('entries', short_help='Show previous 10 time entries')
-@click.argument('workspace')
+@click.argument('workspace', type=WorkspaceName)
 def entries(workspace):
     data = get_time_entries(workspace)
     if VERBOSE:
@@ -140,7 +152,7 @@ def entries(workspace):
             click.echo(f'{entry["id"]}: {entry["description"]}')
 
 @click.command('remove_entry', short_help='Remove entry')
-@click.argument('workspace')
+@click.argument('workspace', type=WorkspaceName)
 @click.argument('time entry ID')
 def remove_entry(workspace, tid):
     ret = remove_time_entry(workspace, tid)
@@ -155,7 +167,7 @@ def add_w(name):
         print_json(ret)
 
 @click.command('add_project', short_help='Add a project')
-@click.argument('workspace')
+@click.argument('workspace', type=WorkspaceName)
 @click.argument('name')
 def add_p(workspacename):
     ret = add_project(workspace, name)
