@@ -6,6 +6,7 @@ ENDPOINT = "https://api.clockify.me/api/"
 VERBOSE = False
 CLOCKIFY_API_EMAIL = os.environ['CLOCKIFY_API_EMAIL']
 CLOCKIFY_API_PASSWORD = os.environ['CLOCKIFY_API_PASSWORD']
+CLOCKIFY_API_KEY = os.environ.get('CLOCKIFY_API_KEY', None)
 CONFIG_FOLDER = os.environ.get('CLOCKIFY_CLI_CONFIG', '~/.clockify.cfg')
 headers = {"X-Api-Key": None}
 
@@ -84,7 +85,9 @@ def cli(verbose):
     global VERBOSE
     VERBOSE = verbose 
     config_file = os.path.expanduser(CONFIG_FOLDER)
-    if os.path.exists(config_file):
+    if CLOCKIFY_API_KEY != None and CLOCKIFY_API_KEY != "":
+        set_api(CLOCKIFY_API_KEY)
+    elif os.path.exists(config_file):
         with open(config_file) as f:
             api = f.read()
             set_api(api)
