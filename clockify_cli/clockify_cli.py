@@ -47,20 +47,36 @@ def get_project_id(workspace, project):
     except ValueError:
         raise ValueError("Could not found project with project name/id {} in {} workspace".format(project, workspace))
 
+def get_tags(workspace):
+    r = requests.get(ENDPOINT+f'workspaces/{workspace}/tags/', headers=headers)
+    return {tag["name"]:tag["id"] for tag in r.json()}
+
+def get_tag_id(workspace, tag):
+    try:
+        return name_or_id_to_id(tag, get_tags(workspace))
+    except ValueError:
+        raise ValueError("Could not found tag with tag name/id {} in {} workspace".format(tag, workspace))
+
 def print_json(inputjson):
     click.echo(json.dumps(inputjson, indent=2))
 
 def get_current_time():
     return str(datetime.datetime.utcnow().isoformat())+'Z'
 
-def start_time_entry(workspace, description, billable="false", project=None, tag=None):
+def start_time_entry(workspace, description, billable="false", project=None, tags=None):
     start = get_current_time()
     if project != None:
         project_id = get_project_id(workspace, project)
     else:
         project_id = None
+
+    tag_ids = []
+    if tags != None:
+        for tag in tags:
+            tag_ids.append(get_tag_id(workspace, tag))
+
     body = {"start": start, "billable": billable, "description": description,
-            "projectId": project_id, "taskId": None, "tagIds": tag}
+            "projectId": project_id, "taskId": None, "tagIds": tag_ids}
     r = requests.post(ENDPOINT+f'workspaces/{workspace}/timeEntries/',
             headers=headers, json=body) 
     return r.json()
