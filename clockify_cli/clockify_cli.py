@@ -8,18 +8,24 @@ CLOCKIFY_API_KEY = os.environ.get('CLOCKIFY_API_KEY', None)
 CONFIG_FOLDER = os.environ.get('CLOCKIFY_CLI_CONFIG', '~/.clockify.cfg')
 headers = {"X-Api-Key": None}
 
+def name_or_id_to_id(name, name_to_id):
+    try:
+        # name is a valid name
+        return name_to_id[name]
+    except KeyError:
+        for valid_id in name_to_id.values():
+            if valid_id == name:
+                # name is a valid id
+                return valid_id
+        raise ValueError("Given name {} is not a valid name or id".format(name))
+
 class WorkspaceType(click.ParamType):
     name = "workspace"
 
     def convert(self, value, param, ctx):
-        workspaces = get_workspaces()
         try:
-            workspace_id = workspaces[value]
-            return workspace_id
-        except KeyError:
-            for wid in workspaces.values():
-                if wid == value:
-                    return value
+            return name_or_id_to_id(value, get_workspaces())
+        except ValueError:
             self.fail(f"Could not found project with name/id '{value!r}'", param, ctx)
 
 WorkspaceName = WorkspaceType()
@@ -36,13 +42,9 @@ def get_projects(workspace):
     return {project["name"]:project["id"] for project in r.json()}
 
 def get_project_id(workspace, project):
-    projects = get_projects(workspace)
     try:
-        return projects[project]
-    except KeyError:
-        for pid in projects.values():
-            if pid == project:
-                return pid
+        return name_or_id_to_id(project, get_projects(workspace))
+    except ValueError:
         raise ValueError("Could not found project with project name/id {} in {} workspace".format(project, workspace))
 
 def print_json(inputjson):
