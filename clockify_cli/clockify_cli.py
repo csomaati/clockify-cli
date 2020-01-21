@@ -35,6 +35,16 @@ def get_projects(workspace):
     r = requests.get(ENDPOINT+f'workspaces/{workspace}/projects/', headers=headers)
     return {project["name"]:project["id"] for project in r.json()}
 
+def get_project_id(workspace, project):
+    projects = get_projects(workspace)
+    try:
+        return projects[project]
+    except KeyError:
+        for pid in projects.values():
+            if pid == project:
+                return pid
+        raise ValueError("Could not found project with project name/id {} in {} workspace".format(project, workspace))
+
 def print_json(inputjson):
     click.echo(json.dumps(inputjson, indent=2))
 
@@ -43,8 +53,12 @@ def get_current_time():
 
 def start_time_entry(workspace, description, billable="false", project=None, tag=None):
     start = get_current_time()
+    if project != None:
+        project_id = get_project_id(workspace, project)
+    else:
+        project_id = None
     body = {"start": start, "billable": billable, "description": description,
-            "projectId": project, "taskId": None, "tagIds": tag}
+            "projectId": project_id, "taskId": None, "tagIds": tag}
     r = requests.post(ENDPOINT+f'workspaces/{workspace}/timeEntries/',
             headers=headers, json=body) 
     return r.json()
