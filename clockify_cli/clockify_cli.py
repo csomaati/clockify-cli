@@ -156,6 +156,17 @@ def finish(workspace):
     if VERBOSE:
         print_json(ret)
 
+@click.command('tags', short_help='Show all tags')
+@click.argument('workspace', type=WorkspaceName)
+def tags(workspace):
+    data = get_tags(workspace)
+    if VERBOSE:
+        print_json(data)
+    else:
+        for name in data:
+            id = data[name]
+            click.echo(f'{id}: {name}')
+
 @click.command('projects', short_help='Show all projects')
 @click.argument('workspace', type=WorkspaceName)
 def projects(workspace):
@@ -212,6 +223,7 @@ def add_p(workspacename):
 
 cli.add_command(start)
 cli.add_command(finish)
+cli.add_command(tags)
 cli.add_command(projects)
 cli.add_command(workspaces)
 cli.add_command(entries)
