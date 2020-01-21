@@ -65,10 +65,9 @@ def get_current_time():
 
 def start_time_entry(workspace, description, billable="false", project=None, tags=None):
     start = get_current_time()
+    project_id = None
     if project != None:
         project_id = get_project_id(workspace, project)
-    else:
-        project_id = None
 
     tag_ids = []
     if tags != None:
