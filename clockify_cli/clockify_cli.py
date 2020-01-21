@@ -12,11 +12,15 @@ class WorkspaceType(click.ParamType):
     name = "workspace"
 
     def convert(self, value, param, ctx):
+        workspaces = get_workspaces()
         try:
-            workspace_id = get_workspaces()[value]
+            workspace_id = workspaces[value]
             return workspace_id
         except KeyError:
-            self.fail(f"Could not found project {value!r}", param, ctx)
+            for wid in workspaces.values():
+                if wid == value:
+                    return value
+            self.fail(f"Could not found project with name/id '{value!r}'", param, ctx)
 
 WorkspaceName = WorkspaceType()
 
