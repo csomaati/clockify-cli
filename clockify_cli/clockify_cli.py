@@ -4,19 +4,12 @@ import click
 
 ENDPOINT = "https://api.clockify.me/api/"
 VERBOSE = False
-CLOCKIFY_API_EMAIL = os.environ['CLOCKIFY_API_EMAIL']
-CLOCKIFY_API_PASSWORD = os.environ['CLOCKIFY_API_PASSWORD']
 CLOCKIFY_API_KEY = os.environ.get('CLOCKIFY_API_KEY', None)
 CONFIG_FOLDER = os.environ.get('CLOCKIFY_CLI_CONFIG', '~/.clockify.cfg')
 headers = {"X-Api-Key": None}
 
 def set_api(api):
     headers["X-Api-Key"] = api
-
-def get_token(email, password):
-    body = {"email": CLOCKIFY_API_EMAIL, "password": CLOCKIFY_API_PASSWORD}
-    r = requests.post(ENDPOINT+'auth/token', headers=headers, json=body)
-    return r.json()
 
 def get_workspaces():
     r = requests.get(ENDPOINT+'workspaces/', headers=headers)
@@ -153,7 +146,7 @@ def remove_entry(workspace, tid):
     ret = remove_time_entry(workspace, tid)
     if VERBOSE:
         print_json(ret)
-    
+
 @click.command('add_workspace', short_help='Add a workspace')
 @click.argument('name')
 def add_w(name):
