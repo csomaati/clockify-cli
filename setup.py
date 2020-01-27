@@ -7,7 +7,7 @@ setup(
     author='Theodore Hu',
     url='https://github.com/t5/clockify-cli',
     install_requires=[
-        'click==6.7',
+        'click>=7.0',
         'certifi==2018.8.13',
         'chardet==3.0.4',
         'click==6.7',
