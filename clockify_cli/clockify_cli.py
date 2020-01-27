@@ -72,6 +72,16 @@ def get_project_id(workspace, project):
     except ValueError:
         raise ValueError(f"Could not found project with project name/id {project}) in {workspace} workspace")
 
+def get_clients(workspace):
+    r = call(f'workspaces/{workspace}/clients')
+    return {client["name"]:client["id"] for client in r}
+
+def get_client_id(workspace, client):
+    try:
+        return name_or_id_to_id(client, get_clients(workspace))
+    except ValueError:
+        raise ValueError(f"Could not found client with client name/id {tag} in {workspace} workspace")
+
 def get_tags(workspace):
     r = call(f'workspaces/{workspace}/tags/')
     return {tag["name"]:tag["id"] for tag in r}
@@ -176,6 +186,20 @@ def finish(workspace):
     if VERBOSE:
         print_json(ret)
 
+@click.command('clients', short_help='Show all clients')
+@click.argument('workspace', type=WorkspaceName)
+def clients(workspace):
+    data = get_clients(workspace)
+    if VERBOSE:
+        print_json(data)
+    elif NAMEONLY:
+        for name in data.keys():
+            click.echo(f'{name}')
+    else:
+        for name in data:
+            id = data[name]
+            click.echo(f'{id}: {name}')
+
 @click.command('tags', short_help='Show all tags')
 @click.argument('workspace', type=WorkspaceName)
 def tags(workspace):
@@ -204,6 +228,19 @@ def projects(workspace):
             id = data[name]
             click.echo(f'{id}: {name}')
 
+@click.command('inprogress', short_help='Show current active time entry')
+@click.argument('workspace', type=WorkspaceName)
+def inprogress(workspace):
+    data = get_in_progress(workspace)
+    if VERBOSE:
+        print_json(data)
+    elif NAMEONLY:
+        for name in data.keys():
+            click.echo(f'{name}')
+    else:
+        for name in data:
+            id = data[name]
+            click.echo(f'{id}: {name}')
 @click.command('workspaces', short_help='Show all workspaces')
 def workspaces():
     data = get_workspaces()
@@ -255,9 +292,11 @@ def add_p(workspacename):
 
 cli.add_command(start)
 cli.add_command(finish)
+cli.add_command(clients)
 cli.add_command(tags)
 cli.add_command(projects)
 cli.add_command(workspaces)
+cli.add_command(inprogress)
 cli.add_command(entries)
 cli.add_command(remove_entry)
 cli.add_command(add_w)
