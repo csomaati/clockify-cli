@@ -1,5 +1,7 @@
 import requests, json, datetime
 import os
+import urllib
+import requests
 import click
 
 ENDPOINT = "https://api.clockify.me/api/"
@@ -34,13 +36,35 @@ WorkspaceName = WorkspaceType()
 def set_api(api):
     headers["X-Api-Key"] = api
 
+def call(path, json={}, method="GET"):
+    if method == "GET":
+        rq = requests.get
+    elif method == "POST":
+        rq = requests.post
+    elif method == "PUT":
+        rq = requests.put
+    elif rq == "DELETE":
+        rq = requests.delete
+    else: raise ValueError(f"Unsupported request method type {method}")
+    url = urllib.parse.urljoin(ENDPOINT, path)
+    try:
+        r = rq(url, json=json, headers=headers)
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Cannot load requested api endpoint {path} with data {data}", e)
+
+    try:
+        return r.json()
+    except ValueError as e:
+        raise RuntimeError(f"Cannot decode response at {path} with data {data}", e)
+
 def get_workspaces():
-    r = requests.get(ENDPOINT+'workspaces/', headers=headers)
-    return {workspace["name"]:workspace["id"] for workspace in r.json()}
+    r = call("workspaces/")
+    return {workspace["name"]:workspace["id"] for workspace in r}
 
 def get_projects(workspace):
-    r = requests.get(ENDPOINT+f'workspaces/{workspace}/projects/', headers=headers)
-    return {project["name"]:project["id"] for project in r.json()}
+    r = call(f'workspaces/{workspace}/projects')
+    return {project["name"]:project["id"] for project in r}
 
 def get_project_id(workspace, project):
     try:
@@ -49,8 +73,8 @@ def get_project_id(workspace, project):
         raise ValueError(f"Could not found project with project name/id {project}) in {workspace} workspace")
 
 def get_tags(workspace):
-    r = requests.get(ENDPOINT+f'workspaces/{workspace}/tags/', headers=headers)
-    return {tag["name"]:tag["id"] for tag in r.json()}
+    r = call(f'workspaces/{workspace}/tags/')
+    return {tag["name"]:tag["id"] for tag in r}
 
 def get_tag_id(workspace, tag):
     try:
@@ -77,14 +101,12 @@ def start_time_entry(workspace, description, billable="false", project=None, tag
 
     body = {"start": start, "billable": billable, "description": description,
             "projectId": project_id, "taskId": None, "tagIds": tag_ids}
-    r = requests.post(ENDPOINT+f'workspaces/{workspace}/timeEntries/',
-            headers=headers, json=body) 
-    return r.json()
+    r = call(f'workspaces/{workspace}/timeEntries/', json=body, method="POST")
+    return r
 
 def get_in_progress(workspace):
-    r = requests.get(ENDPOINT+f'workspaces/{workspace}/timeEntries/inProgress',
-            headers=headers)
-    return r.json()
+    r = call(f'workspaces/{workspace}/timeEntries/inProgress')
+    return r
 
 def finish_time_entry(workspace):
     current = get_in_progress(workspace)
@@ -93,32 +115,27 @@ def finish_time_entry(workspace):
             "billable": current["billable"], "description": current["description"], 
             "projectId": current["projectId"], "taskId": current["taskId"], 
             "tagIds": current["tagIds"], "end": get_current_time()}
-    r = requests.put(ENDPOINT+f'workspaces/{workspace}/timeEntries/{current_id}',
-            headers=headers, json=body)
-    return r.json()
+    r = call(f'workspaces/{workspace}/timeEntries/{current_id}', method="PUT", json=body)
+    return r
 
 def get_time_entries(workspace):
-    r = requests.get(ENDPOINT+f'workspaces/{workspace}/timeEntries/',
-            headers=headers) 
-    return r.json()[:10]
+    r = call(f'workspaces/{workspace}/timeEntries/')
+    return r[:10]
 
 def remove_time_entry(workspace, tid):
-    r = requests.delete(ENDPOINT+f'workspaces/{workspace}/timeEntries/{tid}',
-            headers=headers) 
+    r = call(f'workspaces/{workspace}/timeEntries/{tid}')
     return r.json()
 
 def add_workspace(name):
     body = {"name": name}
-    r = requests.post(ENDPOINT+f'workspaces/',
-            headers=headers, json=body)
-    return r.json()
+    r = call(f'workspaces/', json=body)
+    return r
 
 def add_project(workspace, name):
     body = {"name": name, "clientId": "", "isPublic": "false", "estimate": None,
             "color": None, "billable": None}
-    r = requests.post(ENDPOINT+f'workspaces/{workspace}/projects/',
-            headers=headers, json=body)
-    return r.json()
+    r = call(f'workspaces/{workspace}/projects/', json=body)
+    return r
 
 @click.group()
 @click.option('--verbose', is_flag=True, help="Enable verbose output")
