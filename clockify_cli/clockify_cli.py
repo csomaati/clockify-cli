@@ -18,7 +18,7 @@ def name_or_id_to_id(name, name_to_id):
             if valid_id == name:
                 # name is a valid id
                 return valid_id
-        raise ValueError("Given name {} is not a valid name or id".format(name))
+        raise ValueError(f"Given name {name} is not a valid name or id")
 
 class WorkspaceType(click.ParamType):
     name = "workspace"
@@ -46,7 +46,7 @@ def get_project_id(workspace, project):
     try:
         return name_or_id_to_id(project, get_projects(workspace))
     except ValueError:
-        raise ValueError("Could not found project with project name/id {} in {} workspace".format(project, workspace))
+        raise ValueError(f"Could not found project with project name/id {project}) in {workspace} workspace")
 
 def get_tags(workspace):
     r = requests.get(ENDPOINT+f'workspaces/{workspace}/tags/', headers=headers)
@@ -56,7 +56,7 @@ def get_tag_id(workspace, tag):
     try:
         return name_or_id_to_id(tag, get_tags(workspace))
     except ValueError:
-        raise ValueError("Could not found tag with tag name/id {} in {} workspace".format(tag, workspace))
+        raise ValueError(f"Could not found tag with tag name/id {tag} in {workspace} workspace")
 
 def print_json(inputjson):
     click.echo(json.dumps(inputjson, indent=2))
