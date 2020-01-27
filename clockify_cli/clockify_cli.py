@@ -4,6 +4,7 @@ import click
 
 ENDPOINT = "https://api.clockify.me/api/"
 VERBOSE = False
+NAMEONLY = False
 CLOCKIFY_API_KEY = os.environ.get('CLOCKIFY_API_KEY', None)
 CONFIG_FOLDER = os.environ.get('CLOCKIFY_CLI_CONFIG', '~/.clockify.cfg')
 headers = {"X-Api-Key": None}
@@ -121,9 +122,12 @@ def add_project(workspace, name):
 
 @click.group()
 @click.option('--verbose', is_flag=True, help="Enable verbose output")
-def cli(verbose):
+@click.option('--nameonly', is_flag=True, help="Print only names and do not display ids")
+def cli(verbose, nameonly):
     global VERBOSE
-    VERBOSE = verbose 
+    global NAMEONLY
+    VERBOSE = verbose
+    NAMEONLY = nameonly
     config_file = os.path.expanduser(CONFIG_FOLDER)
     if CLOCKIFY_API_KEY != None and CLOCKIFY_API_KEY != "":
         set_api(CLOCKIFY_API_KEY)
@@ -161,6 +165,9 @@ def tags(workspace):
     data = get_tags(workspace)
     if VERBOSE:
         print_json(data)
+    elif NAMEONLY:
+        for name in data.keys():
+            click.echo(f'{name}')
     else:
         for name in data:
             id = data[name]
@@ -172,6 +179,9 @@ def projects(workspace):
     data = get_projects(workspace)
     if VERBOSE:
         print_json(data)
+    elif NAMEONLY:
+        for name in data.keys():
+            click.echo(f'{name}')
     else:
         for name in data:
             id = data[name]
@@ -182,6 +192,9 @@ def workspaces():
     data = get_workspaces()
     if VERBOSE:
         print_json(data)
+    elif NAMEONLY:
+        for name in data.keys():
+            click.echo(f'{name}')
     else:
         for name in data:
             id = data[name]
@@ -193,6 +206,9 @@ def entries(workspace):
     data = get_time_entries(workspace)
     if VERBOSE:
         print_json(data)
+    elif NAMEONLY:
+        for name in data.keys():
+            click.echo(f'{name}')
     else:
         for entry in data:
             click.echo(f'{entry["id"]}: {entry["description"]}')
