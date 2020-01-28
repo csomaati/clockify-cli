@@ -37,26 +37,21 @@ def set_api(api):
     headers["X-Api-Key"] = api
 
 def call(path, json={}, method="GET"):
-    if method == "GET":
-        rq = requests.get
-    elif method == "POST":
-        rq = requests.post
-    elif method == "PUT":
-        rq = requests.put
-    elif rq == "DELETE":
-        rq = requests.delete
-    else: raise ValueError(f"Unsupported request method type {method}")
+    rq = getattr(requests, method.lower(), None)
+    if rq == None:
+        raise click.UsageError(f"Cannot perform http request with {method} method")
+
     url = urllib.parse.urljoin(ENDPOINT, path)
     try:
         r = rq(url, json=json, headers=headers)
         r.raise_for_status()
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Cannot load requested api endpoint {path} with data {data}", e)
+        raise click.UsageError(f"Cannot load requested api endpoint {path} with data {json}. Call failed with the following error: {str(e)}")
 
     try:
         return r.json()
     except ValueError as e:
-        raise RuntimeError(f"Cannot decode response at {path} with data {data}", e)
+        raise click.UsageError(f"Cannot decode response at {path} with data {json}. Call failed with the following error: {str(e)}")
 
 def get_workspaces():
     r = call("workspaces/")
