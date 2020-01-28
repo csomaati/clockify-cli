@@ -57,8 +57,10 @@ def get_workspaces():
     r = call("workspaces/")
     return {workspace["name"]:workspace["id"] for workspace in r}
 
-def get_projects(workspace):
-    r = call(f'workspaces/{workspace}/projects')
+def get_projects(workspace, clientid=None):
+    r = call(f'workspaces/{workspace}/projects/')
+    if clientid != None:
+        r = [p for p in r if p["clientId"] == clientid]
     return {project["name"]:project["id"] for project in r}
 
 def get_project_id(workspace, project):
@@ -211,8 +213,11 @@ def tags(workspace):
 
 @click.command('projects', short_help='Show all projects')
 @click.argument('workspace', type=WorkspaceName)
-def projects(workspace):
-    data = get_projects(workspace)
+@click.option('--client', '-c', default=None, help="Optional client filter")
+def projects(workspace, client):
+    if client != None:
+        client = name_or_id_to_id(client, get_clients(workspace))
+    data = get_projects(workspace,client)
     if VERBOSE:
         print_json(data)
     elif NAMEONLY:
