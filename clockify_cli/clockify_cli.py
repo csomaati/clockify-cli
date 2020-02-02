@@ -125,9 +125,12 @@ def finish_time_entry(workspace):
     r = call(f'workspaces/{workspace}/timeEntries/{current_id}', method="PUT", json=body)
     return r
 
-def get_time_entries(workspace):
+def get_time_entries(workspace, projectid=None):
     r = call(f'workspaces/{workspace}/timeEntries/')
-    return r[:10]
+    if projectid != None:
+        r = [x for x in r if x['projectId'] == projectid]
+    click.echo([x["description"] for x in r])
+    return {entry['description']: entry['id'] for entry in r}
 
 def remove_time_entry(workspace, tid):
     r = call(f'workspaces/{workspace}/timeEntries/{tid}')
@@ -235,12 +238,10 @@ def inprogress(workspace):
     if VERBOSE:
         print_json(data)
     elif NAMEONLY:
-        for name in data.keys():
-            click.echo(f'{name}')
+        click.echo(f"{data['description']}")
     else:
-        for name in data:
-            id = data[name]
-            click.echo(f'{id}: {name}')
+        for k, v in data.items():
+            click.echo(f'{k}: {v}')
 @click.command('workspaces', short_help='Show all workspaces')
 def workspaces():
     data = get_workspaces()
@@ -256,8 +257,13 @@ def workspaces():
 
 @click.command('entries', short_help='Show previous 10 time entries')
 @click.argument('workspace', type=WorkspaceName)
-def entries(workspace):
-    data = get_time_entries(workspace)
+@click.option("--project")
+def entries(workspace, project):
+    projectid = None
+    if project != None:
+        projectid = get_project_id(workspace, project)
+    data = get_time_entries(workspace, projectid)
+    click.echo(data)
     if VERBOSE:
         print_json(data)
     elif NAMEONLY:
