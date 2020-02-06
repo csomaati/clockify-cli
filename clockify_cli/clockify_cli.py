@@ -4,6 +4,8 @@ import urllib
 import requests
 import click
 
+from clockify_cli import client, project, tag, task, user, workspace 
+
 ENDPOINT = "https://api.clockify.me/api/"
 VERBOSE = False
 NAMEONLY = False
@@ -307,6 +309,14 @@ cli.add_command(entries)
 cli.add_command(remove_entry)
 cli.add_command(add_w)
 cli.add_command(add_p)
+
+
+cli.add_command(workspace.workspace)
+cli.add_command(user.user)
+cli.add_command(client.client)
+cli.add_command(tag.tag)
+cli.add_command(project.project)
+cli.add_command(task.task)
 
 def main():
     cli(obj={})

@@ -3,7 +3,9 @@ import requests
 import urllib
 
 ENDPOINT = "https://api.clockify.me/api/"
-HEADERS = {"X-Api-Key": None}
+HEADERS = {
+    "X-Api-Key": None,
+    }
 
 def set_api(api_key):
     HEADERS["X-Api-Key"] = api_key
@@ -24,9 +26,16 @@ def call(path, json={}, method="GET", response_required=True):
     if rq == None:
         raise click.UsageError(f"Cannot perform http request with {method} method")
 
+    params = None
+    if method=="GET":
+        params=json
     url = urllib.parse.urljoin(ENDPOINT, path)
+    print('DEBUGG: ', url)
+    print('DEBUG: ', json)
     try:
-        r = rq(url, json=json, headers=HEADERS)
+        r = rq(url, json=json, headers=HEADERS, params=params)
+        if (r.status_code // 100) * 100 != 200:
+            return None, r.status_code
     except requests.exceptions.RequestException as e:
         raise click.UsageError(f"Cannot load requested api endpoint {path} with data {json}. Call failed with the following error: {str(e)}")
 
