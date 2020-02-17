@@ -31,7 +31,7 @@ def tag(ctx):
 @click.option("--archived", is_flag=True, default=False)
 @click.option("--page", type=int, default=1)
 #@click.option("--page-size", type=int, default=50)
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 def find(archived, name, page, workspace):
     workspaceID = workspace_controller.find_workspace(workspace)["id"]
     tags = tag_controller.find_tags(workspaceID, archived, name, page)
@@ -39,7 +39,7 @@ def find(archived, name, page, workspace):
         click.echo(printer(tag))
 
 @tag.command()
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.argument("name")
 def add(name, workspace):
     workspaceID = workspace_controller.find_workspace(workspace)["id"]

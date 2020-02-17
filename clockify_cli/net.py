@@ -30,11 +30,12 @@ def call(path, json={}, method="GET", response_required=True):
     if method=="GET":
         params=json
     url = urllib.parse.urljoin(ENDPOINT, path)
-    print('DEBUGG: ', url)
-    print('DEBUG: ', json)
+    #print('DEBUGG: ', url)
+    #print('DEBUG: ', json)
     try:
         r = rq(url, json=json, headers=HEADERS, params=params)
         if (r.status_code // 100) * 100 != 200:
+            click.echo(f"DEBUGGG: {r.text}")
             return None, r.status_code
     except requests.exceptions.RequestException as e:
         raise click.UsageError(f"Cannot load requested api endpoint {path} with data {json}. Call failed with the following error: {str(e)}")

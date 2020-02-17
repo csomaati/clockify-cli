@@ -31,7 +31,7 @@ def current():
     click.echo(printer(current))
 
 @user.command()
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.option("--page", default=0, type=int)
 def list(workspace, page):
     workspace_id = workspace_controller.find_workspace(workspace)["id"]

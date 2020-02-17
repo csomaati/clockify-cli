@@ -20,10 +20,6 @@ def cli(verbose, nameonly):
     global NAMEONLY
     VERBOSE = verbose
     NAMEONLY = nameonly
-    if CLOCKIFY_API_KEY != None and CLOCKIFY_API_KEY != "":
-        net.set_api(CLOCKIFY_API_KEY)
-    else:
-        click.UsageError("Please set your API key in CLOCKIFY_API_KEY env variable")
 
 cli.add_command(commands.workspace)
 cli.add_command(commands.user)
@@ -31,8 +27,13 @@ cli.add_command(commands.client)
 cli.add_command(commands.tag)
 cli.add_command(commands.project)
 cli.add_command(commands.task)
+cli.add_command(commands.entries)
 
 def main():
+    if CLOCKIFY_API_KEY != None and CLOCKIFY_API_KEY != "":
+        net.set_api(CLOCKIFY_API_KEY)
+    else:
+        click.UsageError("Please set your API key in CLOCKIFY_API_KEY env variable")
     cli(obj={})
 
 if __name__ == "__main__":

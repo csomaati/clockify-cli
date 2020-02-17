@@ -32,7 +32,7 @@ def client(ctx):
 @click.option("--name", default=None)
 @click.option("--page", type=int, default=1)
 #@click.option("--page-size", type=int, default=50)
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 def find(archived, name, page, workspace):
     workspace_id = workspace_controller.find_workspace(workspace)['id'] 
     clients = client_controller.find_clients(workspace_id, archived, name, page)
@@ -42,7 +42,7 @@ def find(archived, name, page, workspace):
 
 ## stable and working api
 @client.command()
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.argument("name")
 def add(name, workspace):
     workspace_id = workspace_controller.find_workspace(workspace)['id']

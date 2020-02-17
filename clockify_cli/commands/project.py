@@ -32,7 +32,7 @@ def project(ctx):
 @click.option("--name", default=None)
 @click.option("--page", type=int, default=1)
 @click.option("--page-size", type=int, default=50)
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 def find(archived, name, page, page_size, workspace):
     workspace_id = workspace_controller.find_workspace(workspace)['id'] 
     projects = project_controller.find_projects(workspace_id, archived, name, page)
@@ -40,7 +40,7 @@ def find(archived, name, page, page_size, workspace):
         click.echo(printer(project))
 
 @project.command()
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.argument("name")
 @click.argument("color")
 @click.option("--client")
@@ -62,7 +62,7 @@ def add(name, workspace, client, public, color, note, billable, rate_amount, rat
     click.echo(printer(new_project))
 
 @project.command()
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.argument("project")
 def delete(project, workspace):
     workspace_id = workspace_controller.find_workspace(workspace)['id']

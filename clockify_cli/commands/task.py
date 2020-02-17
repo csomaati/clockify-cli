@@ -30,7 +30,7 @@ def task(ctx):
 @click.option("--name", default=None)
 @click.option("--active", is_flag=True, default=False)
 @click.option("--page", type=int, default=1)
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.option("--project", required=True)
 def find(active, name, page, workspace, project):
     workspace_id = workspace_controller.find_workspace(workspace)["id"]
@@ -40,7 +40,7 @@ def find(active, name, page, workspace, project):
         click.echo(printer(task))
 
 @task.command()
-@click.option("--workspace", required=True)
+@click.option("--workspace", required=True, autocompletion=workspace_controller.workspace_autocomplete)
 @click.option("--project", required=True)
 @click.option("--assignee", multiple=True)
 @click.option("--estimate")

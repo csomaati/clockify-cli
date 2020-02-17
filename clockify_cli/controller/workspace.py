@@ -1,6 +1,14 @@
 import click
 from clockify_cli import net
 
+def workspace_autocomplete(ctx, args, incomplete):
+    candidates = []
+    workspaces = get_workspaces()
+    for workspace in workspaces:
+        candidates.append(workspace["name"])
+    return [x for x in candidates if x.startswith(incomplete)]
+
+
 def get_workspaces():
     response, code = net.call("v1/workspaces")
     if code == 401:
