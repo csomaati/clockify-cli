@@ -7,12 +7,7 @@ def find_tags(workspaceID, archived=False, name=None, page=1):
         "name": name,
         "page": page,
     })
-    if code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code)
     return clients
 
 def _find_tag(workspaceID, target_tag, archived):
@@ -42,12 +37,5 @@ def find_tag(workspaceID, target_tag):
 
 def add_tag(workspaceID, name):
     tag, code = net.call(f"v1/workspaces/{workspaceID}/tags", method="POST", json={"name": name})
-    if code == 400:
-        raise click.UsageError(f"Tag {name} already exists")
-    elif code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code, {400: click.UsageError(f"Tag {name} already exists")})
     return tag

@@ -7,12 +7,7 @@ def find_projects(workspaceID, archived=False, name=None, page=1):
         "name": name,
         "page": page,
     })
-    if code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code)
     return clients
 
 def _find_project(workspaceID, target_project, archived):
@@ -63,24 +58,10 @@ def add_project(workspaceID, name, color, client_id=None, public=False, note=Non
         }
         })
     click.echo(f"DEBUG: {client}")
-    if code == 400:
-        raise click.UsageError(f"Project with name {name} already exists on workspace")
-    elif code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code, {400: click.UsageError(f"Project with name {name} already exists on workspace")})
     return client
 
 def delete_project(workspaceID, projectID):
     deleted_project, code = net.call(f"v1/workspaces/{workspaceID}/projects/{projectID}", method="DELETE")
-    if code == 204:
-        raise click.UsageError(f"No content")
-    elif code == 400:
-        raise click.UsageError("Project {projectID} not found")
-    elif code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
+    net.response_code_handler(code, {400: click.UsageError("Project {projectID} not found")})
     return deleted_project

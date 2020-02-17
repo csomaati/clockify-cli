@@ -7,12 +7,7 @@ def find_tasks(workspaceID, projectID, active=False, name=None, page=1):
         "name": name,
         "page": page,
     })
-    if code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code)
     return clients
 
 def _find_task(workspaceID, projectID, target_task, active):
@@ -50,12 +45,5 @@ def add_task(workspaceID, projectID, name, estimate=None, status=None):
     if status != None:
         request["status"] = status
     new_task, code = net.call(f"v1/workspaces/{workspaceID}/projects/{projectID}/tasks/", method="POST", json=request)
-    if code == 400:
-        raise click.UsageError(f"Task {name} already exists or {projectID} is doesn't exist")
-    elif code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code, {400: click.UsageError(f"Task {name} already exists or {projectID} is doesn't exist")} 
     return new_task

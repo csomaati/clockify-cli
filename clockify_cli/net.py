@@ -7,6 +7,14 @@ HEADERS = {
     "X-Api-Key": None,
     }
 
+DEFAULT_RESPONSE_ANSWERS = {
+    204: click.UsageError("No content"),
+    400: click.UsageError("Bad Request"),
+    401: click.UsageError("Unauthorized"),
+    403: click.UsageError("Forbidden"),
+    404: click.UsageError("Not found")
+}
+
 def set_api(api_key):
     HEADERS["X-Api-Key"] = api_key
 
@@ -47,3 +55,13 @@ def call(path, json={}, method="GET", response_required=True):
             raise click.UsageError(f"Cannot decode response body as json {method} {url} [{json}]")
         return None, r.status_code
 
+def response_code_handler(response_code, response_map=None):
+    custom_map = {}
+    custom_map.update(DEFAULT_RESPONSE_ANSWERS)
+    if response_map:
+        custom_map.update(response_map)
+
+    try:
+        raise custom_map[response_code]
+    except KeyError:
+        return

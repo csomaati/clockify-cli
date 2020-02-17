@@ -7,12 +7,7 @@ def find_clients(workspaceID, archived=False, name=None, page=1):
         "name": name,
         "page": page,
     })
-    if code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code)
     return clients
 
 def _find_client(workspaceID, target_client, archived):
@@ -38,12 +33,5 @@ def find_client(workspaceID, target_client):
 
 def add_client(workspaceID, name):
     client, code = net.call(f'v1/workspaces/{workspaceID}/clients/', method="POST", json={"name": name})
-    if code == 400:
-        raise click.UsageError(f"Client with name {name} already exists on workspace")
-    elif code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code, {400: click.UsageError(f"Client with name {name} already exists on workspace") } )
     return client

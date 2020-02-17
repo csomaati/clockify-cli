@@ -5,12 +5,7 @@ def find_users(workspaceID, page=1):
     clients, code = net.call(f"v1/workspaces/{workspaceID}/users/", json={
         "page": page,
     })
-    if code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code)
     return clients
 
 def find_user(workspaceID, target_user):
@@ -27,10 +22,5 @@ def find_user(workspaceID, target_user):
 
 def current_user():
     user, code = net.call("v1/user")
-    if code == 401:
-        raise click.UsageError("Unauthorized")
-    elif code == 403:
-        raise click.UsageError("Forbidden")
-    elif code == 404:
-        raise click.UsageError("Not found")
+    net.response_code_handler(code)
     return user
